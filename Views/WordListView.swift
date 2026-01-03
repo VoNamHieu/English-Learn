@@ -3,16 +3,16 @@ import SwiftData
 
 struct WordListView: View {
     @Query(sort: \Word.text) private var allWords: [Word]
-    @Query(sort: \Section.sortOrder) private var sections: [Section]
+    @Query(sort: \Lesson.sortOrder) private var lessons: [Lesson]
 
-    @State private var selectedSection: Section?
-    @State private var showAllSections = true
+    @State private var selectedLesson: Lesson?
+    @State private var showAllLessons = true
 
     var filteredWords: [Word] {
-        if showAllSections {
+        if showAllLessons {
             return allWords
-        } else if let section = selectedSection {
-            return allWords.filter { $0.section?.id == section.id }
+        } else if let lesson = selectedLesson {
+            return allWords.filter { $0.lesson?.id == lesson.id }
         }
         return allWords
     }
@@ -20,30 +20,30 @@ struct WordListView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Section filter
-                if !sections.isEmpty {
-                    sectionPicker
+                // Lesson filter
+                if !lessons.isEmpty {
+                    lessonPicker
                 }
 
                 // Word list
                 List {
-                    if showAllSections && !sections.isEmpty {
-                        // Group by sections
-                        ForEach(sections) { section in
-                            let sectionWords = allWords.filter { $0.section?.id == section.id }
-                            if !sectionWords.isEmpty {
+                    if showAllLessons && !lessons.isEmpty {
+                        // Group by lessons
+                        ForEach(lessons) { lesson in
+                            let lessonWords = allWords.filter { $0.lesson?.id == lesson.id }
+                            if !lessonWords.isEmpty {
                                 Section {
-                                    ForEach(sectionWords) { word in
+                                    ForEach(lessonWords) { word in
                                         WordRow(word: word)
                                     }
                                 } header: {
-                                    SectionHeader(section: section)
+                                    LessonHeader(lesson: lesson)
                                 }
                             }
                         }
 
-                        // Words without section
-                        let orphanWords = allWords.filter { $0.section == nil }
+                        // Words without lesson
+                        let orphanWords = allWords.filter { $0.lesson == nil }
                         if !orphanWords.isEmpty {
                             Section("Uncategorized") {
                                 ForEach(orphanWords) { word in
@@ -52,7 +52,7 @@ struct WordListView: View {
                             }
                         }
                     } else {
-                        // Flat list for single section
+                        // Flat list for single lesson
                         ForEach(filteredWords) { word in
                             WordRow(word: word)
                         }
@@ -73,32 +73,32 @@ struct WordListView: View {
         }
     }
 
-    var sectionPicker: some View {
+    var lessonPicker: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 // All button
                 Button {
-                    showAllSections = true
-                    selectedSection = nil
+                    showAllLessons = true
+                    selectedLesson = nil
                 } label: {
                     Text("All")
                         .font(.subheadline.weight(.medium))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .background(showAllSections ? Color.blue : Color.secondary.opacity(0.15))
-                        .foregroundStyle(showAllSections ? .white : .primary)
+                        .background(showAllLessons ? Color.blue : Color.secondary.opacity(0.15))
+                        .foregroundStyle(showAllLessons ? .white : .primary)
                         .clipShape(Capsule())
                 }
 
-                // Section buttons
-                ForEach(sections) { section in
+                // Lesson buttons
+                ForEach(lessons) { lesson in
                     Button {
-                        showAllSections = false
-                        selectedSection = section
+                        showAllLessons = false
+                        selectedLesson = lesson
                     } label: {
                         HStack(spacing: 4) {
-                            Text(section.name)
-                            Text("(\(section.wordCount))")
+                            Text(lesson.name)
+                            Text("(\(lesson.wordCount))")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -106,12 +106,12 @@ struct WordListView: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(
-                            !showAllSections && selectedSection?.id == section.id
+                            !showAllLessons && selectedLesson?.id == lesson.id
                                 ? Color.blue
                                 : Color.secondary.opacity(0.15)
                         )
                         .foregroundStyle(
-                            !showAllSections && selectedSection?.id == section.id
+                            !showAllLessons && selectedLesson?.id == lesson.id
                                 ? .white
                                 : .primary
                         )
@@ -126,14 +126,14 @@ struct WordListView: View {
     }
 }
 
-struct SectionHeader: View {
-    let section: Section
+struct LessonHeader: View {
+    let lesson: Lesson
 
     var body: some View {
         HStack {
-            Text(section.name)
+            Text(lesson.name)
             Spacer()
-            Text("\(section.masteredCount)/\(section.wordCount) mastered")
+            Text("\(lesson.masteredCount)/\(lesson.wordCount) mastered")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -182,5 +182,5 @@ struct WordRow: View {
 
 #Preview {
     WordListView()
-        .modelContainer(for: [Word.self, Definition.self, Section.self], inMemory: true)
+        .modelContainer(for: [Word.self, Definition.self, Lesson.self], inMemory: true)
 }

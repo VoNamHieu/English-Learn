@@ -2,12 +2,12 @@ import Foundation
 import SwiftData
 
 @Model
-class Section {
+class Lesson {
     var name: String
     var createdAt: Date
     var sortOrder: Int
 
-    @Relationship(deleteRule: .cascade, inverse: \Word.section)
+    @Relationship(deleteRule: .cascade, inverse: \Word.lesson)
     var words: [Word] = []
 
     var wordCount: Int {
