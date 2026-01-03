@@ -5,16 +5,16 @@ import UniformTypeIdentifiers
 struct ImportView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Query(sort: \Section.sortOrder) private var sections: [Section]
+    @Query(sort: \Lesson.sortOrder) private var lessons: [Lesson]
 
     @State private var isImporting = false
     @State private var importedCount = 0
     @State private var isProcessing = false
     @State private var errorMessage: String?
     @State private var showSuccess = false
-    @State private var sectionName = ""
+    @State private var lessonName = ""
     @State private var pendingFileURL: URL?
-    @State private var showSectionPrompt = false
+    @State private var showLessonPrompt = false
 
     var body: some View {
         NavigationStack {
@@ -31,7 +31,7 @@ struct ImportView: View {
                     .font(.title.bold())
 
                 // Description
-                Text("Import a CSV file with your vocabulary words.\nEach import creates a new lesson section.")
+                Text("Import a CSV file with your vocabulary words.\nEach import creates a new lesson.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -103,8 +103,8 @@ struct ImportView: View {
             ) { result in
                 handleFileSelection(result)
             }
-            .alert("Name Your Lesson", isPresented: $showSectionPrompt) {
-                TextField("e.g., Unit 1 - Basics", text: $sectionName)
+            .alert("Name Your Lesson", isPresented: $showLessonPrompt) {
+                TextField("e.g., Unit 1 - Basics", text: $lessonName)
                 Button("Import") {
                     if let url = pendingFileURL {
                         processImport(url: url)
@@ -112,7 +112,7 @@ struct ImportView: View {
                 }
                 Button("Cancel", role: .cancel) {
                     pendingFileURL = nil
-                    sectionName = ""
+                    lessonName = ""
                 }
             } message: {
                 Text("Give this import a name to organize your vocabulary")
@@ -122,7 +122,7 @@ struct ImportView: View {
                     dismiss()
                 }
             } message: {
-                Text("Imported \(importedCount) words to \"\(sectionName)\"")
+                Text("Imported \(importedCount) words to \"\(lessonName)\"")
             }
         }
     }
@@ -133,11 +133,11 @@ struct ImportView: View {
             guard let url = urls.first else { return }
             pendingFileURL = url
 
-            // Generate default section name
-            let nextNumber = sections.count + 1
-            sectionName = "Lesson \(nextNumber)"
+            // Generate default lesson name
+            let nextNumber = lessons.count + 1
+            lessonName = "Lesson \(nextNumber)"
 
-            showSectionPrompt = true
+            showLessonPrompt = true
 
         case .failure(let error):
             errorMessage = "Could not access file: \(error.localizedDescription)"
@@ -171,12 +171,12 @@ struct ImportView: View {
 
                 // Save to SwiftData
                 await MainActor.run {
-                    // Create new section
-                    let sectionTitle = sectionName.trimmingCharacters(in: .whitespaces).isEmpty
-                        ? "Lesson \(sections.count + 1)"
-                        : sectionName
-                    let section = Section(name: sectionTitle, sortOrder: sections.count)
-                    modelContext.insert(section)
+                    // Create new lesson
+                    let title = lessonName.trimmingCharacters(in: .whitespaces).isEmpty
+                        ? "Lesson \(lessons.count + 1)"
+                        : lessonName
+                    let lesson = Lesson(name: title, sortOrder: lessons.count)
+                    modelContext.insert(lesson)
 
                     var savedCount = 0
                     for wordData in validWords {
@@ -193,14 +193,14 @@ struct ImportView: View {
                             )
                             definition.synonyms = wordData.synonyms
                             existing.definitions.append(definition)
-                            // Update section if word didn't have one
-                            if existing.section == nil {
-                                existing.section = section
+                            // Update lesson if word didn't have one
+                            if existing.lesson == nil {
+                                existing.lesson = lesson
                             }
                         } else {
                             // Create new word
                             let word = Word(text: wordData.text, dateAdded: wordData.dateAdded)
-                            word.section = section
+                            word.lesson = lesson
                             let definition = Definition(
                                 text: wordData.definition,
                                 type: wordData.type,
@@ -262,5 +262,5 @@ enum ImportError: LocalizedError {
 
 #Preview {
     ImportView()
-        .modelContainer(for: [Word.self, Definition.self, Section.self], inMemory: true)
+        .modelContainer(for: [Word.self, Definition.self, Lesson.self], inMemory: true)
 }

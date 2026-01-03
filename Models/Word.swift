@@ -9,8 +9,8 @@ class Word {
     @Relationship(deleteRule: .cascade)
     var definitions: [Definition] = []
 
-    // Section relationship
-    var section: Section?
+    // Lesson relationship
+    var lesson: Lesson?
 
     // SRS fields
     var nextReviewDate: Date
