@@ -131,12 +131,20 @@ struct ImportView: View {
                     // Parse CSV
                     let words = try CSVParser.parse(content)
                     
+                    // Validate and filter words with empty definitions
+                    let validWords = words.filter { !$0.definition.trimmingCharacters(in: .whitespaces).isEmpty }
+
+                    guard !validWords.isEmpty else {
+                        throw ImportError.noValidWords
+                    }
+
                     // Save to SwiftData
                     await MainActor.run {
-                        for wordData in words {
+                        var savedCount = 0
+                        for wordData in validWords {
                             // Check if word already exists
                             let existingWord = fetchWord(text: wordData.text)
-                            
+
                             if let existing = existingWord {
                                 // Add new definition to existing word
                                 let definition = Definition(
@@ -145,6 +153,7 @@ struct ImportView: View {
                                     level: wordData.level,
                                     vietnamese: wordData.vietnamese
                                 )
+                                definition.synonyms = wordData.synonyms
                                 existing.definitions.append(definition)
                             } else {
                                 // Create new word
@@ -155,15 +164,22 @@ struct ImportView: View {
                                     level: wordData.level,
                                     vietnamese: wordData.vietnamese
                                 )
+                                definition.synonyms = wordData.synonyms
                                 word.definitions.append(definition)
                                 modelContext.insert(word)
                             }
+                            savedCount += 1
                         }
-                        
-                        try? modelContext.save()
-                        importedCount = words.count
-                        isProcessing = false
-                        showSuccess = true
+
+                        do {
+                            try modelContext.save()
+                            importedCount = savedCount
+                            isProcessing = false
+                            showSuccess = true
+                        } catch {
+                            errorMessage = "Failed to save: \(error.localizedDescription)"
+                            isProcessing = false
+                        }
                     }
                 } catch {
                     await MainActor.run {
@@ -189,13 +205,16 @@ struct ImportView: View {
 enum ImportError: LocalizedError {
     case accessDenied
     case invalidFormat
-    
+    case noValidWords
+
     var errorDescription: String? {
         switch self {
         case .accessDenied:
             return "Cannot access the file"
         case .invalidFormat:
             return "Invalid CSV format"
+        case .noValidWords:
+            return "No valid words found. Each word must have a non-empty definition."
         }
     }
 }

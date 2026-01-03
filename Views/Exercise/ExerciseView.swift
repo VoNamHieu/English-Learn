@@ -301,8 +301,13 @@ struct ExerciseSessionView: View {
             exercise.timesCorrect += 1
         }
         exercise.lastShownAt = Date()
-        try? modelContext.save()
-        
+
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to save exercise progress: \(error.localizedDescription)")
+        }
+
         showResult = true
     }
     

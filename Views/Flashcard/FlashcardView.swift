@@ -4,35 +4,31 @@ import SwiftData
 struct FlashcardView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Word.nextReviewDate) private var allWords: [Word]
-    
+
     @State private var currentIndex = 0
     @State private var isFlipped = false
     @State private var offset: CGSize = .zero
     @State private var showComplete = false
-    
-    // Filter due words locally
-    var dueWords: [Word] {
-        allWords.filter { $0.nextReviewDate <= Date() }
-    }
-    
+    @State private var cachedDueWords: [Word] = []
+
     var currentWord: Word? {
-        guard currentIndex < dueWords.count else { return nil }
-        return dueWords[currentIndex]
+        guard currentIndex < cachedDueWords.count else { return nil }
+        return cachedDueWords[currentIndex]
     }
     
     var body: some View {
         NavigationStack {
             VStack {
-                if dueWords.isEmpty {
+                if cachedDueWords.isEmpty {
                     emptyState
                 } else if showComplete {
                     completeState
                 } else if let word = currentWord {
                     // Progress
-                    ProgressView(value: Double(currentIndex), total: Double(dueWords.count))
+                    ProgressView(value: Double(currentIndex), total: Double(cachedDueWords.count))
                         .padding(.horizontal)
-                    
-                    Text("\(currentIndex + 1) / \(dueWords.count)")
+
+                    Text("\(currentIndex + 1) / \(cachedDueWords.count)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     
@@ -85,9 +81,16 @@ struct FlashcardView: View {
                 }
             }
             .navigationTitle("Flashcards")
+            .onAppear {
+                loadDueWords()
+            }
         }
     }
-    
+
+    private func loadDueWords() {
+        cachedDueWords = allWords.filter { $0.nextReviewDate <= Date() }
+    }
+
     var emptyState: some View {
         ContentUnavailableView(
             "No Cards Due",
@@ -101,16 +104,17 @@ struct FlashcardView: View {
             Image(systemName: "party.popper.fill")
                 .font(.system(size: 64))
                 .foregroundStyle(.yellow)
-            
+
             Text("Session Complete!")
                 .font(.title.bold())
-            
-            Text("You reviewed \(dueWords.count) words")
+
+            Text("You reviewed \(cachedDueWords.count) words")
                 .foregroundStyle(.secondary)
-            
+
             Button("Done") {
                 currentIndex = 0
                 showComplete = false
+                loadDueWords()
             }
             .buttonStyle(.borderedProminent)
         }
@@ -133,21 +137,18 @@ struct FlashcardView: View {
     
     private func markWord(correct: Bool) {
         guard let word = currentWord else { return }
-        
-        word.reviewCount += 1
-        if correct {
-            word.correctCount += 1
-            // Move next review further
-            word.nextReviewDate = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
-        } else {
-            // Review again soon
-            word.nextReviewDate = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
+
+        // Use consolidated SRS algorithm from Word model
+        word.updateReview(correct: correct)
+
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to save word review: \(error.localizedDescription)")
         }
-        
-        try? modelContext.save()
-        
+
         withAnimation {
-            if currentIndex < dueWords.count - 1 {
+            if currentIndex < cachedDueWords.count - 1 {
                 currentIndex += 1
             } else {
                 showComplete = true

@@ -16,7 +16,7 @@
 		04D5057C2EF25F6C003E9DBD /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D505742EF25E7D003E9DBD /* PracticeView.swift */; };
 		04D5057D2EF25F70003E9DBD /* WordListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D505732EF25E60003E9DBD /* WordListView.swift */; };
 		04D505842EF26043003E9DBD /* QuizView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D505672EF25CC9003E9DBD /* QuizView.swift */; };
-		04D505872EF26054003E9DBD /* CSVParrser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D5056B2EF25D04003E9DBD /* CSVParrser.swift */; };
+		04D505872EF26054003E9DBD /* CSVParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D5056B2EF25D04003E9DBD /* CSVParser.swift */; };
 		04D505882EF26057003E9DBD /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D5056C2EF25D0D003E9DBD /* OpenAIService.swift */; };
 		04D505892EF2605B003E9DBD /* ExerciseGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D5056D2EF25D18003E9DBD /* ExerciseGenerator.swift */; };
 		04D5058A2EF2605F003E9DBD /* WordViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D5056F2EF25D31003E9DBD /* WordViewModel.swift */; };
@@ -32,7 +32,7 @@
 		04D5055D2EF25C56003E9DBD /* ExerciseGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseGroup.swift; sourceTree = "<group>"; };
 		04D5055F2EF25C69003E9DBD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		04D505672EF25CC9003E9DBD /* QuizView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizView.swift; sourceTree = "<group>"; };
-		04D5056B2EF25D04003E9DBD /* CSVParrser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVParrser.swift; sourceTree = "<group>"; };
+		04D5056B2EF25D04003E9DBD /* CSVParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVParser.swift; sourceTree = "<group>"; };
 		04D5056C2EF25D0D003E9DBD /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
 		04D5056D2EF25D18003E9DBD /* ExerciseGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseGenerator.swift; sourceTree = "<group>"; };
 		04D5056F2EF25D31003E9DBD /* WordViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordViewModel.swift; sourceTree = "<group>"; };
@@ -187,7 +187,7 @@
 			children = (
 				04D5056D2EF25D18003E9DBD /* ExerciseGenerator.swift */,
 				04D5056C2EF25D0D003E9DBD /* OpenAIService.swift */,
-				04D5056B2EF25D04003E9DBD /* CSVParrser.swift */,
+				04D5056B2EF25D04003E9DBD /* CSVParser.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -294,7 +294,7 @@
 				04D5057A2EF25F54003E9DBD /* ContentView.swift in Sources */,
 				04D505772EF25F2E003E9DBD /* Definition.swift in Sources */,
 				04D505882EF26057003E9DBD /* OpenAIService.swift in Sources */,
-				04D505872EF26054003E9DBD /* CSVParrser.swift in Sources */,
+				04D505872EF26054003E9DBD /* CSVParser.swift in Sources */,
 				04D505792EF25F3B003E9DBD /* ExerciseGroup.swift in Sources */,
 				04D505762EF25F27003E9DBD /* Word.swift in Sources */,
 			);
