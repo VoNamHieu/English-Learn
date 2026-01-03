@@ -12,6 +12,7 @@
 		04D505782EF25F37003E9DBD /* Exercise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D5055C2EF25C4E003E9DBD /* Exercise.swift */; };
 		04D505792EF25F3B003E9DBD /* ExerciseGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D5055D2EF25C56003E9DBD /* ExerciseGroup.swift */; };
 		04D505902EF26100003E9DBD /* Lesson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D5058F2EF26100003E9DBD /* Lesson.swift */; };
+		04D505912EF26200003E9DBD /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D505922EF26200003E9DBD /* AppConfig.swift */; };
 		04D5057A2EF25F54003E9DBD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D5055F2EF25C69003E9DBD /* ContentView.swift */; };
 		04D5057B2EF25F68003E9DBD /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D505752EF25E9A003E9DBD /* SettingsView.swift */; };
 		04D5057C2EF25F6C003E9DBD /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D505742EF25E7D003E9DBD /* PracticeView.swift */; };
@@ -43,6 +44,8 @@
 		04D505752EF25E9A003E9DBD /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		04D5058D2EF262E2003E9DBD /* English Learn.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "English Learn.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		04D5058F2EF26100003E9DBD /* Lesson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lesson.swift; sourceTree = "<group>"; };
+		04D505922EF26200003E9DBD /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		04D505932EF26200003E9DBD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -130,6 +133,8 @@
 		04486CF42EF2568900C5D0C0 = {
 			isa = PBXGroup;
 			children = (
+				04D505932EF26200003E9DBD /* Info.plist */,
+				04D505942EF26200003E9DBD /* Config */,
 				04486D0B2EF2578100C5D0C0 /* App */,
 				04D505702EF25D3D003E9DBD /* Resources */,
 				04D5056E2EF25D2A003E9DBD /* ViewModels */,
@@ -139,6 +144,14 @@
 				04D505512EF25BD2003E9DBD /* App */,
 				04D5058D2EF262E2003E9DBD /* English Learn.app */,
 			);
+			sourceTree = "<group>";
+		};
+		04D505942EF26200003E9DBD /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				04D505922EF26200003E9DBD /* AppConfig.swift */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 		04D505512EF25BD2003E9DBD /* App */ = {
@@ -301,6 +314,7 @@
 				04D505792EF25F3B003E9DBD /* ExerciseGroup.swift in Sources */,
 				04D505762EF25F27003E9DBD /* Word.swift in Sources */,
 				04D505902EF26100003E9DBD /* Lesson.swift in Sources */,
+				04D505912EF26200003E9DBD /* AppConfig.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -433,6 +447,8 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				OPENAI_API_KEY = "";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -477,6 +493,8 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				OPENAI_API_KEY = "";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
