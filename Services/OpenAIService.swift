@@ -2,11 +2,11 @@ import Foundation
 
 class OpenAIService {
     static let shared = OpenAIService()
-    
+
     private var apiKey: String {
-        UserDefaults.standard.string(forKey: "openAIKey") ?? ""
+        AppConfig.openAIAPIKey
     }
-    
+
     private let baseURL = "https://api.openai.com/v1/chat/completions"
     
     struct ChatMessage: Codable {
