@@ -5,10 +5,13 @@ import SwiftData
 class Word {
     var text: String
     var dateAdded: Date
-    
+
     @Relationship(deleteRule: .cascade)
     var definitions: [Definition] = []
-    
+
+    // Section relationship
+    var section: Section?
+
     // SRS fields
     var nextReviewDate: Date
     var reviewCount: Int = 0

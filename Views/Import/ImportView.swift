@@ -5,34 +5,38 @@ import UniformTypeIdentifiers
 struct ImportView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
+    @Query(sort: \Section.sortOrder) private var sections: [Section]
+
     @State private var isImporting = false
     @State private var importedCount = 0
     @State private var isProcessing = false
     @State private var errorMessage: String?
     @State private var showSuccess = false
-    
+    @State private var sectionName = ""
+    @State private var pendingFileURL: URL?
+    @State private var showSectionPrompt = false
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
                 Spacer()
-                
+
                 // Icon
                 Image(systemName: "doc.text")
                     .font(.system(size: 64))
                     .foregroundStyle(.blue)
-                
+
                 // Title
                 Text("Import Vocabulary")
                     .font(.title.bold())
-                
+
                 // Description
-                Text("Import a CSV file with your vocabulary words.\nRequired columns: Word, Type, Definition, Level")
+                Text("Import a CSV file with your vocabulary words.\nEach import creates a new lesson section.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
-                
+
                 // Import Button
                 Button {
                     isImporting = true
@@ -54,7 +58,7 @@ struct ImportView: View {
                 }
                 .disabled(isProcessing)
                 .padding(.horizontal, 32)
-                
+
                 // Error message
                 if let error = errorMessage {
                     Text(error)
@@ -62,9 +66,9 @@ struct ImportView: View {
                         .foregroundStyle(.red)
                         .padding(.horizontal)
                 }
-                
+
                 Spacer()
-                
+
                 // CSV Format hint
                 VStack(alignment: .leading, spacing: 8) {
                     Text("CSV Format Example:")
@@ -80,7 +84,7 @@ struct ImportView: View {
                 .background(.regularMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .padding(.horizontal)
-                
+
                 Spacer()
             }
             .navigationTitle("Import")
@@ -97,103 +101,140 @@ struct ImportView: View {
                 allowedContentTypes: [UTType.commaSeparatedText, UTType.text],
                 allowsMultipleSelection: false
             ) { result in
-                handleFileImport(result)
+                handleFileSelection(result)
+            }
+            .alert("Name Your Lesson", isPresented: $showSectionPrompt) {
+                TextField("e.g., Unit 1 - Basics", text: $sectionName)
+                Button("Import") {
+                    if let url = pendingFileURL {
+                        processImport(url: url)
+                    }
+                }
+                Button("Cancel", role: .cancel) {
+                    pendingFileURL = nil
+                    sectionName = ""
+                }
+            } message: {
+                Text("Give this import a name to organize your vocabulary")
             }
             .alert("Import Successful", isPresented: $showSuccess) {
                 Button("OK") {
                     dismiss()
                 }
             } message: {
-                Text("Imported \(importedCount) words successfully!")
+                Text("Imported \(importedCount) words to \"\(sectionName)\"")
             }
         }
     }
-    
-    private func handleFileImport(_ result: Result<[URL], Error>) {
+
+    private func handleFileSelection(_ result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
             guard let url = urls.first else { return }
-            
-            isProcessing = true
-            errorMessage = nil
-            
-            Task {
-                do {
-                    // Request access to the file
-                    guard url.startAccessingSecurityScopedResource() else {
-                        throw ImportError.accessDenied
-                    }
-                    defer { url.stopAccessingSecurityScopedResource() }
-                    
-                    // Read file content
-                    let content = try String(contentsOf: url, encoding: .utf8)
-                    
-                    // Parse CSV
-                    let words = try CSVParser.parse(content)
-                    
-                    // Validate and filter words with empty definitions
-                    let validWords = words.filter { !$0.definition.trimmingCharacters(in: .whitespaces).isEmpty }
+            pendingFileURL = url
 
-                    guard !validWords.isEmpty else {
-                        throw ImportError.noValidWords
-                    }
+            // Generate default section name
+            let nextNumber = sections.count + 1
+            sectionName = "Lesson \(nextNumber)"
 
-                    // Save to SwiftData
-                    await MainActor.run {
-                        var savedCount = 0
-                        for wordData in validWords {
-                            // Check if word already exists
-                            let existingWord = fetchWord(text: wordData.text)
+            showSectionPrompt = true
 
-                            if let existing = existingWord {
-                                // Add new definition to existing word
-                                let definition = Definition(
-                                    text: wordData.definition,
-                                    type: wordData.type,
-                                    level: wordData.level,
-                                    vietnamese: wordData.vietnamese
-                                )
-                                definition.synonyms = wordData.synonyms
-                                existing.definitions.append(definition)
-                            } else {
-                                // Create new word
-                                let word = Word(text: wordData.text, dateAdded: wordData.dateAdded)
-                                let definition = Definition(
-                                    text: wordData.definition,
-                                    type: wordData.type,
-                                    level: wordData.level,
-                                    vietnamese: wordData.vietnamese
-                                )
-                                definition.synonyms = wordData.synonyms
-                                word.definitions.append(definition)
-                                modelContext.insert(word)
-                            }
-                            savedCount += 1
-                        }
-
-                        do {
-                            try modelContext.save()
-                            importedCount = savedCount
-                            isProcessing = false
-                            showSuccess = true
-                        } catch {
-                            errorMessage = "Failed to save: \(error.localizedDescription)"
-                            isProcessing = false
-                        }
-                    }
-                } catch {
-                    await MainActor.run {
-                        errorMessage = "Import failed: \(error.localizedDescription)"
-                        isProcessing = false
-                    }
-                }
-            }
-            
         case .failure(let error):
             errorMessage = "Could not access file: \(error.localizedDescription)"
         }
     }
-    
+
+    private func processImport(url: URL) {
+        isProcessing = true
+        errorMessage = nil
+
+        Task {
+            do {
+                // Request access to the file
+                guard url.startAccessingSecurityScopedResource() else {
+                    throw ImportError.accessDenied
+                }
+                defer { url.stopAccessingSecurityScopedResource() }
+
+                // Read file content
+                let content = try String(contentsOf: url, encoding: .utf8)
+
+                // Parse CSV
+                let words = try CSVParser.parse(content)
+
+                // Validate and filter words with empty definitions
+                let validWords = words.filter { !$0.definition.trimmingCharacters(in: .whitespaces).isEmpty }
+
+                guard !validWords.isEmpty else {
+                    throw ImportError.noValidWords
+                }
+
+                // Save to SwiftData
+                await MainActor.run {
+                    // Create new section
+                    let sectionTitle = sectionName.trimmingCharacters(in: .whitespaces).isEmpty
+                        ? "Lesson \(sections.count + 1)"
+                        : sectionName
+                    let section = Section(name: sectionTitle, sortOrder: sections.count)
+                    modelContext.insert(section)
+
+                    var savedCount = 0
+                    for wordData in validWords {
+                        // Check if word already exists
+                        let existingWord = fetchWord(text: wordData.text)
+
+                        if let existing = existingWord {
+                            // Add new definition to existing word
+                            let definition = Definition(
+                                text: wordData.definition,
+                                type: wordData.type,
+                                level: wordData.level,
+                                vietnamese: wordData.vietnamese
+                            )
+                            definition.synonyms = wordData.synonyms
+                            existing.definitions.append(definition)
+                            // Update section if word didn't have one
+                            if existing.section == nil {
+                                existing.section = section
+                            }
+                        } else {
+                            // Create new word
+                            let word = Word(text: wordData.text, dateAdded: wordData.dateAdded)
+                            word.section = section
+                            let definition = Definition(
+                                text: wordData.definition,
+                                type: wordData.type,
+                                level: wordData.level,
+                                vietnamese: wordData.vietnamese
+                            )
+                            definition.synonyms = wordData.synonyms
+                            word.definitions.append(definition)
+                            modelContext.insert(word)
+                        }
+                        savedCount += 1
+                    }
+
+                    do {
+                        try modelContext.save()
+                        importedCount = savedCount
+                        isProcessing = false
+                        showSuccess = true
+                    } catch {
+                        errorMessage = "Failed to save: \(error.localizedDescription)"
+                        isProcessing = false
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = "Import failed: \(error.localizedDescription)"
+                    isProcessing = false
+                }
+            }
+        }
+
+        pendingFileURL = nil
+    }
+
     private func fetchWord(text: String) -> Word? {
         let descriptor = FetchDescriptor<Word>(
             predicate: #Predicate { $0.text == text }
@@ -221,5 +262,5 @@ enum ImportError: LocalizedError {
 
 #Preview {
     ImportView()
-        .modelContainer(for: [Word.self, Definition.self], inMemory: true)
+        .modelContainer(for: [Word.self, Definition.self, Section.self], inMemory: true)
 }

@@ -8,7 +8,8 @@ struct English_LearnApp: App {
             Word.self,
             Definition.self,
             ExerciseGroup.self,
-            Exercise.self
+            Exercise.self,
+            Section.self
         ])
         
         let modelConfiguration = ModelConfiguration(
