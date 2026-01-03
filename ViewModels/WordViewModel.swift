@@ -34,27 +34,13 @@ class WordViewModel {
     }
     
     func updateMastery(for word: Word, correct: Bool) {
-        word.reviewCount += 1
-        if correct {
-            word.correctCount += 1
+        // Use consolidated SRS algorithm from Word model
+        word.updateReview(correct: correct)
+
+        do {
+            try modelContext?.save()
+        } catch {
+            errorMessage = "Failed to save: \(error.localizedDescription)"
         }
-        
-        // Simple SRS logic
-        let accuracy = word.accuracy
-        if accuracy >= 0.9 && word.reviewCount >= 5 {
-            word.masteryLevel = .mastered
-            word.nextReviewDate = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
-        } else if accuracy >= 0.7 {
-            word.masteryLevel = .familiar
-            word.nextReviewDate = Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()
-        } else if accuracy >= 0.5 {
-            word.masteryLevel = .learning
-            word.nextReviewDate = Calendar.current.date(byAdding: .day, value: 3, to: Date()) ?? Date()
-        } else {
-            word.masteryLevel = .new
-            word.nextReviewDate = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
-        }
-        
-        try? modelContext?.save()
     }
 }
